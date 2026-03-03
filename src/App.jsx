@@ -75,7 +75,16 @@ export default function App() {
         throw new Error(`API 오류 (${res.status}) ${text}`.trim());
       }
 
-      const data = await res.json();
+      const raw = await res.text();
+      if (!raw) throw new Error("API 응답이 비어있습니다.");
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        // JSON이 아니면 raw 자체를 결과로 취급 (혹은 에러로 처리해도 됨)
+        data = { story: raw };
+      }
 
       // 백엔드 응답 포맷이 { story: "..." }가 가장 이상적입니다.
       // 우선 여러 케이스 흡수:
@@ -84,7 +93,7 @@ export default function App() {
         data.text ??
         data.output ??
         data.result ??
-        (typeof data === "string" ? data : JSON.stringify(data));
+        raw;
 
       setStory(String(out).trim());
     } catch (e) {
