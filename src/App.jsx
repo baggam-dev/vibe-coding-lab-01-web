@@ -64,11 +64,17 @@ export default function App() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/generate`, {
+      const url = `${API_BASE}/generate?ts=${Date.now()}`; // 캐시 방지용
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ prompt }),
       });
+
+      if (res.status === 304) {
+        throw new Error("캐시된 응답(304)으로 본문이 비어있습니다. 캐시를 무시하도록 설정했습니다.");
+      }
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
