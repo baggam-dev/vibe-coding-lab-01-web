@@ -65,28 +65,37 @@ export default function App() {
 
     try {
       const url = `${API_BASE}/generate?ts=${Date.now()}`; // 캐시 방지용
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-        },
-        cache: "no-store",
-        body: JSON.stringify({ prompt }),
-      });
+      const res = await fetch(`${API_BASE}/generate?ts=${Date.now()}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "Pragma": "no-cache",
+      },
+      cache: "no-store",
+      body: JSON.stringify({ prompt }),
+    });
 
-      if (res.status === 304) {
-        throw new Error("캐시된 응답(304)으로 본문이 비어있습니다. 캐시를 무시하도록 설정했습니다.");
-      }
+    // ✅ 304/204 같은 바디 없는 응답 방지
+    if (res.status === 204 || res.status === 304) {
+      throw new Error(`본문 없는 응답(status=${res.status})`);
+    }
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`API 오류 (${res.status}) ${text}`.trim());
-      }
+    const raw = await res.text(); // 먼저 text로 받기
+    if (!raw) {
+      const ct = res.headers.get("content-type");
+      throw new Error(`API 응답이 비어있습니다. status=${res.status}, content-type=${ct}`);
+    }
 
-      const data = await res.json();
-      const out = data.story ?? data.text ?? "";
-      setStory(String(out).trim());
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      throw new Error(`JSON 파싱 실패: ${raw.slice(0, 120)}`);
+    }
+
+    const out = data.story ?? data.text ?? "";
+    setStory(String(out).trim());
     } catch (e) {
       setError(e?.message || "알 수 없는 오류가 발생했습니다.");
     } finally {
