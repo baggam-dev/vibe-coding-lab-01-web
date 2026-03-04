@@ -64,30 +64,56 @@ export default function App() {
     setLoading(true);
 
     try {
-      const url = `${API_BASE}/generate?ts=${Date.now()}`; // 캐시 방지용
-      const res = await fetch(`${API_BASE}/generate?ts=${Date.now()}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        "Pragma": "no-cache",
-      },
-      cache: "no-store",
-      body: JSON.stringify({ prompt }),
-    });
+      const url = `${API_BASE}/generate?ts=${Date.now()}`;
 
-    // ✅ 304/204 같은 바디 없는 응답 방지
-    if (res.status === 204 || res.status === 304) {
-      throw new Error(`본문 없는 응답(status=${res.status})`);
-    }
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "Pragma": "no-cache",
+        },
+        cache: "no-store",
+        body: JSON.stringify({ prompt }),
+      });
 
-    if (!res.headers) {
-      const ct = res.headers.get("Content-Type");
-      throw new Error(`API 응답이 비어있습니다. status=${res.status}, content-type=${ct}`);
-    }
+      // (1) 상태 코드 먼저 방어
+      if (res.status === 204 || res.status === 304) {
+        throw new Error(`본문 없는 응답(status=${res.status})`);
+      }
 
-    const data = await res.json();
-    setStory((data.story ?? data.text ?? "").trim());
+      // (2) content-type 확인 (OPTIONS/HTML/기타 방지)
+      const ct = res.headers.get("content-type") || "";
+      // JSON이 아니면 body를 텍스트로 읽어서 에러에 포함(디버그용)
+      if (!ct.includes("application/json")) {
+        const raw = await res.text().catch(() => "");
+        throw new Error(
+          `JSON 응답이 아닙니다. status=${res.status}, content-type=${ct || "null"}, body=${raw.slice(0, 120)}`
+        );
+      }
+
+      // (3) 무조건 text로 받고, 비었으면 명확한 에러
+      const raw = await res.text();
+      if (!raw) {
+        throw new Error(
+          `API 응답이 비어있습니다. status=${res.status}, content-type=${ct || "null"}`
+        );
+      }
+
+      // (4) JSON 파싱
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(`JSON 파싱 실패: ${raw.slice(0, 120)}`);
+      }
+
+      // (5) HTTP 에러면 서버 메시지 보여주기
+      if (!res.ok) {
+        throw new Error(data?.error || `API 오류 (${res.status})`);
+      }
+
+      setStory(String(data.story ?? data.text ?? "").trim());
     } catch (e) {
       setError(e?.message || "알 수 없는 오류가 발생했습니다.");
     } finally {
