@@ -81,21 +81,13 @@ export default function App() {
       throw new Error(`본문 없는 응답(status=${res.status})`);
     }
 
-    const raw = await res.text(); // 먼저 text로 받기
-    if (!raw) {
-      const ct = res.headers.get("content-type");
+    if (!res.headers) {
+      const ct = res.headers.get("Content-Type");
       throw new Error(`API 응답이 비어있습니다. status=${res.status}, content-type=${ct}`);
     }
 
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (e) {
-      throw new Error(`JSON 파싱 실패: ${raw.slice(0, 120)}`);
-    }
-
-    const out = data.story ?? data.text ?? "";
-    setStory(String(out).trim());
+    const data = await res.json();
+    setStory((data.story ?? data.text ?? "").trim());
     } catch (e) {
       setError(e?.message || "알 수 없는 오류가 발생했습니다.");
     } finally {
