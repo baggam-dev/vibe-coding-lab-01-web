@@ -276,11 +276,6 @@ export default function App() {
                 </pre>
               )}
             </div>
-
-            <div className="mt-4 text-xs text-slate-500">
-              팁: 백엔드가 <code>{`{ story: "..." }`}</code> 형태로 응답하면 프론트가 더
-              깔끔해집니다.
-            </div>
           </section>
         </div>
       </div>
