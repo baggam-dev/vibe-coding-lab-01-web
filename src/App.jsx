@@ -54,8 +54,7 @@ export default function App() {
 `.trim();
   }, [form]);
 
-  const canSubmit =
-    Boolean(API_BASE) && form.name.trim() && form.setting.trim() && !loading;
+  const canSubmit = Boolean(API_BASE) && form.name.trim() && form.setting.trim() && !loading;
 
   async function handleGenerate() {
     setError("");
@@ -71,7 +70,7 @@ export default function App() {
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "no-store",
-          "Pragma": "no-cache",
+          Pragma: "no-cache",
         },
         cache: "no-store",
         body: JSON.stringify({ prompt }),
@@ -140,12 +139,8 @@ export default function App() {
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <span>Vibe Coding Lab 01</span>
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight">
-            동화 도입부 생성기
-          </h1>
-          <p className="mt-2 text-slate-600">
-            변수 입력 → 서버 호출 → 도입부 5줄 출력
-          </p>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight">동화 도입부 생성기</h1>
+          <p className="mt-2 text-slate-600">변수 입력 → 서버 호출 → 도입부 5줄 출력</p>
         </header>
 
         {!API_BASE && (
@@ -164,9 +159,7 @@ export default function App() {
           {/* 입력 카드 */}
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-lg font-semibold">입력</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              최소 필수값만 넣고 바로 생성해보세요.
-            </p>
+            <p className="mt-1 text-sm text-slate-600">최소 필수값만 넣고 바로 생성해보세요.</p>
 
             <div className="mt-5 space-y-4">
               <Field label="주인공 이름" required hint="예: 준희, 민준, 루루">
@@ -191,9 +184,7 @@ export default function App() {
                 <input
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 outline-none focus:border-slate-300 focus:ring-4 focus:ring-slate-100"
                   value={form.setting}
-                  onChange={(e) =>
-                    setForm({ ...form, setting: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, setting: e.target.value })}
                   placeholder="배경"
                 />
               </Field>
@@ -217,9 +208,7 @@ export default function App() {
                 disabled={!canSubmit}
                 className={cx(
                   "mt-2 w-full rounded-xl px-4 py-2.5 font-semibold text-white shadow-sm transition",
-                  canSubmit
-                    ? "bg-slate-900 hover:bg-slate-800 active:bg-slate-950"
-                    : "bg-slate-300"
+                  canSubmit ? "bg-slate-900 hover:bg-slate-800 active:bg-slate-950" : "bg-slate-300"
                 )}
               >
                 {loading ? "생성 중..." : "도입부 생성"}
@@ -289,8 +278,8 @@ export default function App() {
             </div>
 
             <div className="mt-4 text-xs text-slate-500">
-              팁: 백엔드가 <code>{`{ story: "..." }`}</code> 형태로 응답하면
-              프론트가 더 깔끔해집니다.
+              팁: 백엔드가 <code>{`{ story: "..." }`}</code> 형태로 응답하면 프론트가 더
+              깔끔해집니다.
             </div>
           </section>
         </div>
